@@ -27,9 +27,10 @@ router.post('/vehicle-makes', function (req, res) {
     VehicleMake.create(req.body, function (err, make) {
         if (err) {
             log.error(err);
-            res.status(500).send({
-                error: true
-            });
+            res.status(500).send([{
+                code: 500,
+                message: 'Internal Server Error'
+            }]);
             return;
         }
         res.send(make);
@@ -37,24 +38,24 @@ router.post('/vehicle-makes', function (req, res) {
 });
 
 router.get('/vehicle-makes/:id', function (req, res) {
-    VehicleMake.findOne({
-        id: req.params.id
-    }).exec(function (err, make) {
-            if (err) {
-                log.error('vehicle-make find error');
-                res.status(500).send({
-                    error: true
-                });
-                return;
-            }
-            if (!make) {
-                res.status(404).send({
-                    error: true
-                });
-                return;
-            }
-            res.send(sanitizer.export(make));
-        });
+    VehicleMake.findOne({_id: req.params.id}).exec(function (err, make) {
+        if (err) {
+            log.error(err);
+            res.status(500).send([{
+                code: 500,
+                message: 'Internal Server Error'
+            }]);
+            return;
+        }
+        if (!make) {
+            res.status(404).send([{
+                code: 404,
+                message: 'Vehicle Make Not Found'
+            }]);
+            return;
+        }
+        res.send(sanitizer.clean(make));
+    });
 });
 
 
@@ -72,11 +73,11 @@ router.get('/vehicle-makes', function (req, res) {
         .sort(data.paging.sort)
         .exec(function (err, makes) {
             if (err) {
-                //TODO: send proper HTTP code
-                log.error('vehicle-make find error');
-                res.status(500).send({
-                    error: true
-                });
+                log.error(err);
+                res.status(500).send([{
+                    code: 500,
+                    message: 'Internal Server Error'
+                }]);
                 return;
             }
             res.send(makes);
@@ -85,29 +86,30 @@ router.get('/vehicle-makes', function (req, res) {
 
 router.delete('/vehicle-makes/:id', function (req, res) {
     if (!mongutils.objectId(req.params.id)) {
-        res.status(404).send({
-            error: 'specified vehicle-make cannot be found'
-        });
+        res.status(404).send([{
+            code: 404,
+            message: 'Vehicle Make Not Found'
+        }]);
         return;
     }
     VehicleMake.findOne({_id: req.params.id}).exec(function (err, make) {
         if (err) {
-            log.error('vehicle-make find error');
-            res.status(500).send({
-                error: 'error while retrieving vehicle-make'
-            });
+            log.error(err);
+            res.status(500).send([{
+                code: 500,
+                message: 'Internal Server Error'
+            }]);
             return;
         }
         if (!make) {
-            res.status(404).send({
-                error: 'specified vehicle-make cannot be found'
-            });
+            res.status(404).send([{
+                code: 404,
+                message: 'Vehicle Make Not Found'
+            }]);
             return;
         }
         make.remove();
-        res.send({
-            error: false
-        });
+        res.status(204).end();
     });
 });
 
