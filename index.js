@@ -1,14 +1,17 @@
-var log = require('logger')('vehicle-make-service');
-var utils = require('utils');
-var VehicleMake = require('vehicle-make');
-var mongoose = require('mongoose');
-var mongutils = require('mongutils');
-var sanitizer = require('./sanitizer');
-
+var log = require('logger')('service-vehicle-makes');
 var express = require('express');
-var router = express.Router();
+var bodyParser = require('body-parser');
 
-module.exports = router;
+var errors = require('errors');
+var utils = require('utils');
+var mongutils = require('mongutils');
+var auth = require('auth');
+var serandi = require('serandi');
+
+var VehicleMakes = require('model-vehicle-makes');
+
+// var validators = require('./validators');
+var sanitizers = require('./sanitizers');
 
 var paging = {
     start: 0,
@@ -20,96 +23,81 @@ var fields = {
     '*': true
 };
 
-/**
- * {"name": "serandives app"}
- */
-router.post('/vehicle-makes', function (req, res) {
-    VehicleMake.create(req.body, function (err, make) {
-        if (err) {
-            log.error(err);
-            res.status(500).send([{
-                code: 500,
-                message: 'Internal Server Error'
-            }]);
-            return;
-        }
-        res.send(make);
-    });
-});
 
-router.get('/vehicle-makes/:id', function (req, res) {
-    VehicleMake.findOne({_id: req.params.id}).exec(function (err, make) {
-        if (err) {
-            log.error(err);
-            res.status(500).send([{
-                code: 500,
-                message: 'Internal Server Error'
-            }]);
-            return;
-        }
-        if (!make) {
-            res.status(404).send([{
-                code: 404,
-                message: 'Vehicle Make Not Found'
-            }]);
-            return;
-        }
-        res.send(sanitizer.clean(make));
-    });
-});
+module.exports = function (router) {
+    router.use(serandi.pond);
+    router.use(serandi.ctx);
+    router.use(auth({
+        open: [
+            '^\/$',
+            '^\/.*'
+        ],
+        hybrid: []
+    }));
+    router.use(bodyParser.json());
 
-
-/**
- * /users?data={}
- */
-router.get('/vehicle-makes', function (req, res) {
-    var data = req.query.data ? JSON.parse(req.query.data) : {};
-    sanitizer.clean(data.query || (data.query = {}));
-    utils.merge(data.paging || (data.paging = {}), paging);
-    utils.merge(data.fields || (data.fields = {}), fields);
-    VehicleMake.find(data.query)
-        .skip(data.paging.start)
-        .limit(data.paging.count)
-        .sort(data.paging.sort)
-        .exec(function (err, makes) {
+    /**
+     * {"name": "serandives app"}
+     */
+    /*router.post('/', validators.create, sanitizers.create, function (req, res) {
+        VehicleMakes.create(req.body, function (err, make) {
             if (err) {
                 log.error(err);
-                res.status(500).send([{
-                    code: 500,
-                    message: 'Internal Server Error'
-                }]);
-                return;
+                return res.pond(errors.serverError());
             }
-            res.send(makes);
+            res.locate(make.id).status(201).send(make);
         });
-});
+    });*/
 
-router.delete('/vehicle-makes/:id', function (req, res) {
-    if (!mongutils.objectId(req.params.id)) {
-        res.status(404).send([{
-            code: 404,
-            message: 'Vehicle Make Not Found'
-        }]);
-        return;
-    }
-    VehicleMake.findOne({_id: req.params.id}).exec(function (err, make) {
-        if (err) {
-            log.error(err);
-            res.status(500).send([{
-                code: 500,
-                message: 'Internal Server Error'
-            }]);
-            return;
+    router.get('/:id', function (req, res) {
+        if (!mongutils.objectId(req.params.id)) {
+            return res.pond(errors.notFound());
         }
-        if (!make) {
-            res.status(404).send([{
-                code: 404,
-                message: 'Vehicle Make Not Found'
-            }]);
-            return;
-        }
-        make.remove();
-        res.status(204).end();
+        VehicleMakes.findOne({_id: req.params.id}).exec(function (err, make) {
+            if (err) {
+                log.error(err);
+                return res.pond(errors.serverError());
+            }
+            if (!make) {
+                return res.pond(errors.notFound());
+            }
+            res.send(make);
+        });
     });
-});
+
+
+    /**
+     * /users?data={}
+     */
+    router.get('/', function (req, res) {
+        var data = req.query.data ? JSON.parse(req.query.data) : {};
+        sanitizers.clean(data.query || (data.query = {}));
+        utils.merge(data.paging || (data.paging = {}), paging);
+        utils.merge(data.fields || (data.fields = {}), fields);
+        VehicleMakes.find(data.query)
+            .skip(data.paging.start)
+            .limit(data.paging.count)
+            .sort(data.paging.sort)
+            .exec(function (err, makes) {
+                if (err) {
+                    log.error(err);
+                    return res.pond(errors.serverError());
+                }
+                res.send(makes);
+            });
+    });
+
+    /*router.delete('/:id', function (req, res) {
+        if (!mongutils.objectId(req.params.id)) {
+            return res.pond(errors.notFound());
+        }
+        VehicleMakes.remove({_id: req.params.id}, function (err) {
+            if (err) {
+                log.error(err);
+                return res.pond(errors.serverError());
+            }
+            res.status(204).end();
+        });
+    });*/
+};
 
