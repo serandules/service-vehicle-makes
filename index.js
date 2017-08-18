@@ -28,13 +28,10 @@ module.exports = function (router) {
     router.use(serandi.pond);
     router.use(serandi.ctx);
     router.use(auth({
-        GET: {
-            open: [
-                '^\/$',
-                '^\/.*'
-            ],
-            hybrid: []
-        }
+        GET: [
+            '^\/$',
+            '^\/.*'
+        ]
     }));
     router.use(bodyParser.json());
 
