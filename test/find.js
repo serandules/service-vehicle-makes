@@ -5,14 +5,6 @@ var pot = require('pot');
 var errors = require('errors');
 
 describe('GET /vehicle-makes', function () {
-    before(function (done) {
-        pot.start(done);
-    });
-
-    after(function (done) {
-        pot.stop(done);
-    });
-
     it('GET /vehicle-makes', function (done) {
         request({
             uri: pot.resolve('autos', '/apis/v/vehicle-makes'),
