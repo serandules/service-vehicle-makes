@@ -33,7 +33,7 @@ module.exports = function (router) {
             '^\/.*'
         ]
     }));
-    router.use(throttle({name: 'vehicle-makes'}));
+    router.use(throttle.apis('vehicle-makes'));
     router.use(bodyParser.json());
 
     /**
