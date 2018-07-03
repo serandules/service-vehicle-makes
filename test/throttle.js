@@ -1,3 +1,3 @@
 var pot = require('pot');
 
-pot.throttlit('autos', 'vehicles')
+pot.throttlit('autos', 'vehicle-makes');
