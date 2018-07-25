@@ -55,7 +55,7 @@ module.exports = function (router) {
         }
         VehicleMakes.findOne({_id: req.params.id}).exec(function (err, make) {
             if (err) {
-                log.error(err);
+                log.error('vehicle-makes:find-one', err);
                 return res.pond(errors.serverError());
             }
             if (!make) {
@@ -80,7 +80,7 @@ module.exports = function (router) {
             .sort(data.paging.sort)
             .exec(function (err, makes) {
                 if (err) {
-                    log.error(err);
+                    log.error('vehicle-makes:find', err);
                     return res.pond(errors.serverError());
                 }
                 res.send(makes);
