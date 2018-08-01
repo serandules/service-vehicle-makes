@@ -34,6 +34,7 @@ module.exports = function (router) {
         ]
     }));
     router.use(throttle.apis('vehicle-makes'));
+    router.use(serandi.cors);
     router.use(bodyParser.json());
 
     /**
