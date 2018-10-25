@@ -7,3 +7,5 @@ nconf.overrides({
     "SERVICE_TOKENS": "master:accounts:/apis/v/tokens",
     "LOCAL_VEHICLE_MAKES": __dirname + "/..:autos:/apis/v/vehicle-makes"
 });
+
+require('pot');

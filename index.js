@@ -14,7 +14,7 @@ var VehicleMakes = require('model-vehicle-makes');
 var validators = require('./validators');
 var sanitizers = require('./sanitizers');
 
-module.exports = function (router) {
+module.exports = function (router, done) {
     router.use(serandi.many);
     router.use(serandi.ctx);
     router.use(auth({
@@ -39,14 +39,10 @@ module.exports = function (router) {
         });
     });*/
 
-    router.get('/:id', validators.findOne, sanitizers.findOne, function (req, res) {
+    router.get('/:id', validators.findOne, sanitizers.findOne, function (req, res, next) {
       mongutils.findOne(VehicleMakes, req.query, function (err, make) {
         if (err) {
-          log.error('vehicle-makes:find-one', err);
-          return res.pond(errors.serverError());
-        }
-        if (!make) {
-          return res.pond(errors.notFound());
+          return next(err);
         }
         res.send(make);
       });
@@ -56,11 +52,10 @@ module.exports = function (router) {
     /**
      * /users?data={}
      */
-    router.get('/', validators.find, sanitizers.find, function (req, res) {
+    router.get('/', validators.find, sanitizers.find, function (req, res, next) {
       mongutils.find(VehicleMakes, req.query.data, function (err, makes, paging) {
         if (err) {
-          log.error('vehicle-makes:find', err);
-          return res.pond(errors.serverError());
+          return next(err);
         }
         res.many(makes, paging);
       });
@@ -78,5 +73,7 @@ module.exports = function (router) {
             res.status(204).end();
         });
     });*/
+
+    done();
 };
 
