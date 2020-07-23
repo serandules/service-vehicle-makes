@@ -7,7 +7,7 @@ var errors = require('errors');
 describe('GET /vehicle-makes', function () {
     it('GET /vehicle-makes', function (done) {
         request({
-            uri: pot.resolve('autos', '/apis/v/vehicle-makes'),
+            uri: pot.resolve('apis', '/v/vehicle-makes'),
             method: 'GET',
             json: true
         }, function (e, r, b) {
@@ -30,7 +30,7 @@ describe('GET /vehicle-makes', function () {
 
     it('GET /vehicle-makes/:id', function (done) {
         request({
-            uri: pot.resolve('autos', '/apis/v/vehicle-makes'),
+            uri: pot.resolve('apis', '/v/vehicle-makes'),
             method: 'GET',
             json: true
         }, function (e, r, b) {
@@ -45,7 +45,7 @@ describe('GET /vehicle-makes', function () {
             should.exist(make.id);
             should.exist(make.title);
             request({
-                uri: pot.resolve('autos', '/apis/v/vehicle-makes/' + make.id),
+                uri: pot.resolve('apis', '/v/vehicle-makes/' + make.id),
                 method: 'GET',
                 json: true
             }, function (e, r, b) {
